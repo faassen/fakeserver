@@ -2,7 +2,7 @@
   "name": "fakeserver",
   "version": "0.1.0",
   "description": "A fake server that runs entirely client-side.",
-  "main": "lib/fakserver.js",
+  "main": "lib/fakeserver.js",
   "scripts": {
     "compile": "babel -d lib/ src/",
     "prepublish": "npm run compile",
