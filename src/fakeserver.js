@@ -55,7 +55,30 @@ import polyfill from 'babel/polyfill';
     
 // };
 
-export default class FakeServer extends xhr.server {
+export class Response {
+    constructor(body, status=200, headers=null) {
+        if (headers === null) {
+            headers = {'Content-Type': 'application/json'};
+        }
+        this.status = status;
+        this.headers = headers;
+        this.body = body;
+    }
+    execute(request) {
+        for (let key of Object.keys(this.headers)) {
+            request.setResponseHeader(key, this.headers[key]);
+        }
+        request.receive(this.status, this.body);
+    }
+};
+
+export class NotFoundResponse extends Response {
+    constructor() {
+        super('Not Found', 404, {'Content-Type': 'text/plain'});
+    }
+};
+
+export class FakeServer extends xhr.server {
     constructor() {
         super();
         this.router = new Router();
@@ -63,19 +86,24 @@ export default class FakeServer extends xhr.server {
     register(path, handler) {
         this.router.addPattern(path, handler);
     }
-    handle(request) {
+    makeResponse(request) {
         this.router.resolve(request.urlParts.path);
         let {value, stack, variables} = this.router.resolve(
             request.urlParts.path);
         if (stack.length > 0) {
-            request.setResponseHeader('Content-Type', 'text/plain');
-            request.receive(404, "Not found");
-            return;
+            return new NotFoundResponse();
         }
-        let [status, headers, body] = value(variables, request);
-        for (let key of Object.keys(headers)) {
-            request.setResponseHeader(key, headers[key]);
+        let result = value(variables, request);
+        if (result === undefined || result === null) {
+            return new NotFoundResponse();
         }
-        request.receive(status, body);
+        if (result instanceof Response) {
+            return result;
+        }
+        return new Response(result);
+    }
+    handle(request) {
+        let response = this.makeResponse(request);
+        response.execute(request);
     }
 };
