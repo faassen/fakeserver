@@ -14,7 +14,7 @@ suite("fakeserver", function() {
 
         server.start();
         $.getJSON('animals/chicken').done(function(value) {
-            assert.deepEqual({'animal': "chicken"}, value);
+            assert.deepEqual(value, {'animal': "chicken"});
             done();
         });
         server.stop();
@@ -28,7 +28,7 @@ suite("fakeserver", function() {
 
         server.start();
         $.getJSON('animals/chicken').done(function(value) {
-            assert.deepEqual({'animal': "chicken"}, value);
+            assert.deepEqual(value, {'animal': "chicken"});
             done();
         });
         server.stop();
@@ -42,11 +42,52 @@ suite("fakeserver", function() {
         server.register('animals/{id}', handler);
 
         server.start();
-        $.getJSON('something_else').fail(function() {
+        $.getJSON('something_else').fail(function(req) {
+            assert.equal(req.status, 404);
             done();
         });
         server.stop();
     })
+    test("POST request", function(done) {
+        let server = new FakeServer();
+        function handler(variables, request) {
+            return JSON.stringify({'animal': variables.id});
+        }
+        server.register('animals/{id}', handler, {
+            method: 'POST'
+        });
+        server.start();
+        $.ajax({
+            type: 'POST',
+            url: 'animals/chicken',
+            data: 'somedata',
+            dataType: 'json'
+        }).done(function(data) {
+            assert.deepEqual(data, {'animal': 'chicken'});
+            done();
+        });
+        server.stop();
+    });
+    test("POST request means no GET", function(done) {
+        let server = new FakeServer();
+        function handler(variables, request) {
+            return JSON.stringify({'animal': variables.id});
+        }
+        server.register('animals/{id}', handler, {
+            method: 'POST'
+        });
+        server.start();
+        $.ajax({
+            type: 'GET',
+            url: 'animals/chicken',
+            data: 'somedata',
+            dataType: 'json'
+        }).fail(function(req) {
+            assert.equal(req.status, 405);
+            done();
+        });
+        server.stop();
+    });
 
 });
 

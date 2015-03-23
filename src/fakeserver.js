@@ -2,34 +2,6 @@ import xhr from 'mock-xhr';
 import Router from 'more-router';
 import polyfill from 'babel/polyfill';
 
-// export class NestedMap {
-//     constructor() {
-//         this.map = new Map();
-//     }
-//     set(keys, value) {
-//         let m = this.map;
-//         for (let key of keys.slice(0, -1)) {
-//             let sub = m.get(key);
-//             if (key === undefined) {
-//                 sub = new Map();
-//                 m.set(key, sub);
-//             }
-//             m = sub;
-//         }
-//         m.set(keys[keys.length - 1], value);
-//     }
-//     get(keys) {
-//         let m = this.map;
-//         for (let key of keys) {
-//             m = m.get(key);
-//             if (m === undefined) {
-//                 return undefined;
-//             }
-//         }
-//         return m;
-//     }
-// };
-
 // export class MockServerConfiguration {
 //     constructor() {
 //         this.configuration = new Map();
@@ -83,11 +55,11 @@ export class FakeServer extends xhr.server {
         super();
         this.router = new Router();
     };
-    register(path, handler) {
+    register(path, handler, {method='GET'}) {
+        
         this.router.addPattern(path, handler);
     }
     makeResponse(request) {
-        this.router.resolve(request.urlParts.path);
         let {value, stack, variables} = this.router.resolve(
             request.urlParts.path);
         if (stack.length > 0) {
