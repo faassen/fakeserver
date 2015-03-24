@@ -36,6 +36,6 @@
   },
   "dependencies": {
     "mock-xhr": "^0.1.0",
-    "more-router": "^0.1.0"
+    "more-router": "^0.2.0"
   }
 }
