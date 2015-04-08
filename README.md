@@ -1,5 +1,5 @@
-fakserver
-=========
+fakeserver
+==========
 
 Introduction
 ------------
