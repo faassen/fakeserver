@@ -15,7 +15,8 @@ Usage
 -----
 
 ```javascript
-  import {FakeServer, Response} from 'fakeserver';
+  import {FakeServer, Response,
+          methodNotAllowedHandler, notFoundHandler} from 'fakeserver';
 
   // when looking up a handler we do it by using
   // last bit of the URL that wasn't handled
