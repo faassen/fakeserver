@@ -49,7 +49,7 @@ Usage
   fakeserver.register('animals/{id}', handler);
 
   // this is how to handle a PUT request:
-  // fakeserver.register('animals/{id}', { method: 'PUT'});
+  // fakeserver.register('animals/{id}', handler, { method: 'PUT'});
 
   // override default XMLHTTPRequest
   fakeserver.start();
