@@ -1,3 +1,10 @@
+0.3
+===
+
+* It turns out fakefetch functions need to return a promise instead of
+  a value. This is because otherwise it cannot deal with the request
+  body, which in the fetch API is also a promise.
+
 0.2
 ===
 

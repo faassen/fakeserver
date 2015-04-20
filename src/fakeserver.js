@@ -18,10 +18,10 @@ export class FakeResponse {
         request.receive(this.status, this.body);
     }
     fetchResponse() {
-        return new Promise((resolve, reject) => {
-            resolve(new Response(this.body, { status: this.status,
-                                              headers: this.headers }));
-        });
+//        return new Promise((resolve, reject) => {
+            return new Response(this.body, { status: this.status,
+                                             headers: this.headers });
+//        });
     }
 };
 
@@ -86,16 +86,22 @@ export class FakeFetch {
             }
             const u = new URL(uri, window.location);
             const request = new Request(uri, init);
-            const r = this.publisher.resolve(u.pathname, request);
-            let response = null;
-            if (r === null) {
-                response = notFoundHandler({}, request);
-            } else if (r instanceof FakeResponse) {
-                response = r;
-            } else {
-                response = new FakeResponse(r);
+
+            const p = this.publisher.resolve(u.pathname, request);
+            if (p === null) {
+                return Promise.resolve(notFoundHandler({}, request));
             }
-            return response.fetchResponse();
+            return p.then(r => {
+                let response = null;
+                if (r === null) {
+                    response = notFoundHandler({}, request);
+                } else if (r instanceof FakeResponse) {
+                    response = r;
+                } else {
+                    response = new FakeResponse(r);
+                }
+                return response.fetchResponse();
+            });
         };
     }
 };
