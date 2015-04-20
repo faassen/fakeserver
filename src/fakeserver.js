@@ -2,7 +2,7 @@ import xhr from 'mock-xhr';
 import {Publisher} from 'more-router';
 import polyfill from 'babel/polyfill';
 
-export class Response {
+export class FakeResponse {
     constructor(body, status=200, headers=null) {
         if (headers === null) {
             headers = {'Content-Type': 'application/json'};
@@ -17,9 +17,15 @@ export class Response {
         }
         request.receive(this.status, this.body);
     }
+    fetchResponse() {
+        return new Promise((resolve, reject) => {
+            resolve(new Response(this.body, { status: this.status,
+                                              headers: this.headers }));
+        });
+    }
 };
 
-export class NotFoundResponse extends Response {
+export class NotFoundResponse extends FakeResponse {
     constructor() {
         super('Not Found', 404, {'Content-Type': 'text/plain'});
     }
@@ -30,8 +36,8 @@ export function notFoundHandler(variables, request) {
 }
 
 export function methodNotAllowedHandler(variables, request) {
-    return new Response('Method not allowed', 405,
-                        {'Content-Type': 'text/plain'});
+    return new FakeResponse('Method not allowed', 405,
+                            {'Content-Type': 'text/plain'});
 }
 
 export class FakeServer extends xhr.server {
@@ -51,13 +57,45 @@ export class FakeServer extends xhr.server {
         if (result === null) {
             return notFoundHandler({}, request);
         }
-        if (result instanceof Response) {
+        if (result instanceof FakeResponse) {
             return result;
         }
-        return new Response(result);
+        return new FakeResponse(result);
     }
     handle(request) {
         let response = this.makeResponse(request);
         response.execute(request);
+    }
+};
+
+export class FakeFetch {
+    constructor(keySpec) {
+        this.publisher = new Publisher(keySpec);
+    }
+
+    register(path, handler, keyObj=null) {
+        if (keyObj === null) {
+            keyObj = {};
+        }
+        this.publisher.register(path, keyObj, handler);
+    }
+    getFetch() {
+        return (uri, init) => {
+            if (init === undefined) {
+                init = {};
+            }
+            const u = new URL(uri, window.location);
+            const request = new Request(uri, init);
+            const r = this.publisher.resolve(u.pathname, request);
+            let response = null;
+            if (r === null) {
+                response = notFoundHandler({}, request);
+            } else if (r instanceof FakeResponse) {
+                response = r;
+            } else {
+                response = new FakeResponse(r);
+            }
+            return response.fetchResponse();
+        };
     }
 };

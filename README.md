@@ -9,6 +9,12 @@ you really do not: the fake server runs in the browser and no real server
 is involved. It does this by replacing XMLHTTPRequest with an object
 that completely handles your requests on the client.
 
+In addition there is a `FakeFetch` implementation which can be used to
+create a simple mock version of the new `Fetch` API by calling its
+`getFetch` method. It does override the browser's `fetch`
+implementation at this point, just gives you a fake `fetch` you can
+use instead.
+
 fakeserver is built on more-router and mock-xhr.
 
 Usage
